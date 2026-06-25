@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>StreamSports</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body { background: #000; color: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+header { width: 100%; padding: 1rem 1.2rem 0.4rem; display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+header h1 { font-size: 1rem; font-weight: 700; color: #4caf50; letter-spacing: -0.3px; text-transform: uppercase; }
+header .dot { width: 5px; height: 5px; background: #4caf50; border-radius: 50%; flex-shrink: 0; }
+
+.player-wrap { flex: 1; position: relative; background: #000; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; width: 100%; }
+.player-wrap video { width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; }
+
+.overlay { position: absolute; inset: 0; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 10; }
+.overlay.visible { opacity: 1; pointer-events: auto; }
+
+.top-gradient { position: absolute; top: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%); pointer-events: none; }
+
+.center-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 72px; height: 72px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.5); color: #fff; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; padding-left: 5px; backdrop-filter: blur(4px); pointer-events: auto; }
+.center-play:active { transform: translate(-50%, -50%) scale(0.92); background: rgba(76,175,80,0.5); border-color: #4caf50; }
+
+.bottom-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 0 1rem 0.5rem; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%); pointer-events: auto; }
+
+.progress-wrap { width: 100%; padding: 8px 0; cursor: pointer; position: relative; touch-action: none; }
+.progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.15); border-radius: 3px; position: relative; overflow: visible; transition: height 0.15s; }
+.progress-wrap:hover .progress-track { height: 6px; }
+.progress-fill { height: 100%; background: #4caf50; border-radius: 3px; width: 0%; position: relative; transition: width 0.05s linear; }
+.progress-fill::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: #4caf50; border-radius: 50%; opacity: 0; transition: opacity 0.15s; box-shadow: 0 0 6px rgba(76,175,80,0.6); }
+.progress-wrap:hover .progress-fill::after { opacity: 1; }
+.progress-buffer { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,255,255,0.08); border-radius: 3px; }
+.progress-hover { position: absolute; bottom: 100%; left: 0; transform: translateX(-50%); background: #111; color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 3px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.1s; margin-bottom: 8px; border: 1px solid #222; }
+.progress-wrap:hover .progress-hover { opacity: 1; }
+
+.controls-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.25rem 0; }
+.ctrl-btn { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; border-radius: 4px; min-width: 36px; min-height: 36px; }
+.ctrl-btn:active { background: rgba(255,255,255,0.08); }
+.ctrl-btn:hover { color: #4caf50; }
+.ctrl-btn.live-btn { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #666; padding: 4px 12px; border-radius: 4px; border: 1px solid #333; }
+.ctrl-btn.live-btn.active { color: #4caf50; border-color: #4caf50; background: rgba(76,175,80,0.1); }
+.time { font-size: 0.78rem; color: #aaa; letter-spacing: 0.3px; white-space: nowrap; }
+.spacer { flex: 1; }
+.volume-mobile { display: flex; align-items: center; gap: 0.4rem; }
+.volume-mobile input { width: 60px; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.15); border-radius: 2px; outline: none; }
+.volume-mobile input::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #4caf50; border-radius: 50%; cursor: pointer; }
+
+.ad-overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 20; }
+.ad-overlay.active { display: flex; }
+.ad-overlay video { width: 100%; height: 100%; object-fit: contain; }
+.ad-label { position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.85); color: #4caf50; font-size: 0.6rem; padding: 3px 10px; border-radius: 3px; border: 1px solid #2e7d32; letter-spacing: 1px; text-transform: uppercase; }
+.skip-btn { position: absolute; bottom: 90px; right: 16px; background: rgba(0,0,0,0.9); color: #fff; border: 1px solid #2e7d32; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: none; }
+.skip-btn.show { display: block; }
+.skip-btn:active { background: #1b5e20; }
+.ad-timer { position: absolute; bottom: 90px; left: 16px; background: rgba(0,0,0,0.85); color: #4caf50; font-size: 0.8rem; padding: 4px 12px; border-radius: 3px; border: 1px solid #2e7d32; }
+
+.banner-ad { width: 100%; flex-shrink: 0; min-height: 60px; background: #080808; display: flex; align-items: center; justify-content: center; color: #1a3a1a; font-size: 0.65rem; border-top: 1px solid #0a0a0a; overflow: hidden; }
+.banner-ad ins.adsbygoogle { display: block; }
+
+.status-bar { width: 100%; padding: 0.3rem 1.2rem; font-size: 0.65rem; color: #1a1a1a; flex-shrink: 0; }
+.status-bar .dot { color: #4caf50; }
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+  header { padding: 0.6rem 0.8rem 0.2rem; }
+  header h1 { font-size: 0.85rem; }
+  .center-play { width: 60px; height: 60px; font-size: 1.4rem; }
+  .bottom-controls { padding: 0 0.6rem 0.4rem; }
+  .controls-row { gap: 0.5rem; }
+  .ctrl-btn { font-size: 1.1rem; min-width: 32px; min-height: 32px; padding: 4px; }
+  .time { font-size: 0.7rem; }
+  .volume-mobile input { width: 40px; }
+  .progress-track { height: 3px; }
+  .banner-ad { min-height: 50px; }
+  .ctrl-btn.live-btn { font-size: 0.6rem; padding: 3px 8px; }
+}
+
+@media (max-height: 400px) {
+  header { display: none; }
+  .bottom-controls { padding-bottom: 0.2rem; }
+  .controls-row { gap: 0.4rem; }
+  .ctrl-btn { font-size: 0.9rem; min-width: 28px; min-height: 28px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+<span class="dot"></span>
+<h1>StreamSports</h1>
+</header>
+
+<div class="player-wrap" id="playerWrap">
+<div class="ad-overlay" id="adOverlay">
+<span class="ad-label">Ad</span>
+<video id="adVideo" muted playsinline></video>
+<span class="ad-timer" id="adTimer"></span>
+<button class="skip-btn" id="skipBtn">Skip Ad</button>
+</div>
+
+<video id="mainVideo" playsinline preload="metadata"></video>
+
+<div class="overlay" id="overlay">
+<div class="top-gradient"></div>
+<button class="center-play" id="centerPlay">▶</button>
+
+<div class="bottom-controls">
+<div class="progress-wrap" id="progressWrap">
+<div class="progress-hover" id="progressHover">0:00</div>
+<div class="progress-track">
+<div class="progress-buffer" id="bufferBar"></div>
+<div class="progress-fill" id="progressFill"></div>
+</div>
+</div>
+<div class="controls-row">
+<button class="ctrl-btn" id="playBtn">▶</button>
+<button class="ctrl-btn" id="rewindBtn">⏪</button>
+<button class="ctrl-btn" id="forwardBtn">⏩</button>
+<span class="time" id="timeDisplay">0:00 / 0:00</span>
+<div class="spacer"></div>
+<button class="ctrl-btn live-btn" id="liveBtn">Live</button>
+<div class="volume-mobile">
+<button class="ctrl-btn" id="volumeBtn">🔊</button>
+<input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
+</div>
+<button class="ctrl-btn" id="fullscreenBtn">⛶</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="status-bar"><span class="dot">●</span> <span id="status">Ready</span></div>
+
+<div class="banner-ad">
+<ins class="adsbygoogle"
+style="display:block"
+data-ad-client="ca-pub-xxxxxxxxxxxxxxxx"
+data-ad-slot="xxxxxxxxxx"
+data-ad-format="auto"
+data-full-width-responsive="true"></ins>
+</div>
+
+<script>
+const STREAM_URL = 'https://d1jzu95oc8fgt3.cloudfront.net/FOX_Sports.m3u8';
+const PREROLL_AD_URL = '';
+const AD_DURATION = 15;
+const SKIP_AFTER = 5;
+
+const video = document.getElementById('mainVideo');
+const wrap = document.getElementById('playerWrap');
+const overlay = document.getElementById('overlay');
+const centerPlay = document.getElementById('centerPlay');
+const playBtn = document.getElementById('playBtn');
+const rewindBtn = document.getElementById('rewindBtn');
+const forwardBtn = document.getElementById('forwardBtn');
+const liveBtn = document.getElementById('liveBtn');
+const progressFill = document.getElementById('progressFill');
+const bufferBar = document.getElementById('bufferBar');
+const progressWrap = document.getElementById('progressWrap');
+const progressHover = document.getElementById('progressHover');
+const timeDisplay = document.getElementById('timeDisplay');
+const volumeBtn = document.getElementById('volumeBtn');
+const volumeSlider = document.getElementById('volumeSlider');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const statusEl = document.getElementById('status');
+const adOverlay = document.getElementById('adOverlay');
+const adVideo = document.getElementById('adVideo');
+const adTimer = document.getElementById('adTimer');
+const skipBtn = document.getElementById('skipBtn');
+
+let hls = null;
+let adInterval = null;
+let isPlaying = false;
+let hideTimer = null;
+let isLive = false;
+
+function fmt(t) {
+if (!t || isNaN(t)) return '0:00';
+const m = Math.floor(t / 60);
+const s = Math.floor(t % 60);
+return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function showOverlay() {
+overlay.classList.add('visible');
+clearTimeout(hideTimer);
+if (isPlaying) {
+hideTimer = setTimeout(() => overlay.classList.remove('visible'), 3000);
+}
+}
+
+wrap.addEventListener('mousemove', showOverlay);
+wrap.addEventListener('touchstart', showOverlay);
+wrap.addEventListener('click', (e) => {
+if (e.target === wrap || e.target.closest('video')) togglePlay();
+});
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+if (e.target.tagName === 'INPUT') return;
+switch(e.key) {
+case ' ':
+case 'k': e.preventDefault(); togglePlay(); break;
+case 'ArrowLeft': e.preventDefault(); skip(-5); break;
+case 'ArrowRight': e.preventDefault(); skip(5); break;
+case 'f': e.preventDefault(); toggleFullscreen(); break;
+case 'm': e.preventDefault(); toggleMute(); break;
+}
+});
+
+function skip(sec) {
+if (!video.duration && !isLive) return;
+const t = Math.max(0, Math.min((video.currentTime || 0) + sec, video.duration || Infinity));
+video.currentTime = t;
+showOverlay();
+}
+
+function togglePlay() {
+if (!isPlaying) {
+if (hls || video.src) {
+video.play().then(() => setPlaying(true)).catch(() => {});
+}
+} else {
+video.pause();
+setPlaying(false);
+showOverlay();
+}
+}
+
+function setPlaying(state) {
+isPlaying = state;
+playBtn.textContent = state ? '⏸' : '▶';
+centerPlay.textContent = state ? '⏸' : '▶';
+centerPlay.style.opacity = state ? '0' : '1';
+if (!state) { overlay.classList.add('visible'); clearTimeout(hideTimer); }
+}
+
+function toggleFullscreen() {
+if (document.fullscreenElement || document.webkitFullscreenElement) {
+document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+} else {
+const el = wrap;
+(el.requestFullscreen?.() || el.webkitRequestFullscreen?.()).catch(() => {});
+}
+}
+
+function toggleMute() {
+video.muted = !video.muted;
+volumeSlider.value = video.muted ? 0 : video.volume;
+volumeBtn.textContent = video.muted || video.volume === 0 ? '🔇' : video.volume < 0.5 ? '🔉' : '🔊';
+}
+
+centerPlay.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+playBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+rewindBtn.addEventListener('click', (e) => { e.stopPropagation(); skip(-5); });
+forwardBtn.addEventListener('click', (e) => { e.stopPropagation(); skip(5); });
+
+liveBtn.addEventListener('click', (e) => {
+e.stopPropagation();
+if (video.duration && video.seekable.length) {
+video.currentTime = video.seekable.end(video.seekable.length - 1);
+}
+});
+
+video.addEventListener('timeupdate', () => {
+if (video.duration && video.duration !== Infinity) {
+const pct = (video.currentTime / video.duration) * 100;
+progressFill.style.width = `${pct}%`;
+timeDisplay.textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
+const nearLive = video.duration - video.currentTime < 3;
+liveBtn.classList.toggle('active', nearLive);
+isLive = nearLive;
+} else if (isNaN(video.duration) || video.duration === Infinity) {
+progressFill.style.width = '100%';
+timeDisplay.textContent = `Live`;
+liveBtn.classList.add('active');
+isLive = true;
+}
+});
+
+video.addEventListener('progress', () => {
+if (video.buffered.length) {
+const end = video.buffered.end(video.buffered.length - 1);
+if (video.duration && isFinite(video.duration)) {
+bufferBar.style.width = `${(end / video.duration) * 100}%`;
+}
+}
+});
+
+video.addEventListener('loadedmetadata', () => {
+if (video.duration === Infinity || isNaN(video.duration)) {
+isLive = true;
+liveBtn.classList.add('active');
+timeDisplay.textContent = 'Live';
+}
+});
+
+// Progress bar seeking
+let isDragging = false;
+function seekFromEvent(e) {
+if (!video.duration || !isFinite(video.duration)) return;
+const rect = progressWrap.getBoundingClientRect();
+const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+const pct = Math.max(0, Math.min(1, x / rect.width));
+const t = pct * video.duration;
+video.currentTime = t;
+progressFill.style.width = `${pct * 100}%`;
+}
+
+function updateHover(e) {
+if (!video.duration || !isFinite(video.duration)) return;
+const rect = progressWrap.getBoundingClientRect();
+const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+const pct = Math.max(0, Math.min(1, x / rect.width));
+progressHover.style.left = `${pct * 100}%`;
+progressHover.textContent = fmt(pct * video.duration);
+}
+
+progressWrap.addEventListener('mousemove', updateHover);
+progressWrap.addEventListener('mouseleave', () => { progressHover.style.opacity = '0'; });
+progressWrap.addEventListener('mouseenter', () => { progressHover.style.opacity = '1'; });
+progressWrap.addEventListener('click', (e) => { if (!isDragging) seekFromEvent(e); });
+
+progressWrap.addEventListener('mousedown', (e) => { isDragging = true; seekFromEvent(e); });
+document.addEventListener('mousemove', (e) => { if (isDragging) seekFromEvent(e); });
+document.addEventListener('mouseup', () => { isDragging = false; });
+
+progressWrap.addEventListener('touchstart', (e) => { isDragging = true; seekFromEvent(e); }, { passive: true });
+progressWrap.addEventListener('touchmove', (e) => { if (isDragging) seekFromEvent(e); }, { passive: true });
+progressWrap.addEventListener('touchend', () => { isDragging = false; });
+
+volumeSlider.addEventListener('input', () => {
+video.volume = volumeSlider.value;
+video.muted = video.volume === 0;
+volumeBtn.textContent = video.volume === 0 ? '🔇' : video.volume < 0.5 ? '🔉' : '🔊';
+});
+
+fullscreenBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFullscreen(); });
+
+function setStatus(msg) { statusEl.textContent = msg; }
+
+function playPrerollAd() {
+if (!PREROLL_AD_URL) { startMainStream(); return; }
+setStatus('Ad');
+video.pause();
+adOverlay.classList.add('active');
+adVideo.src = PREROLL_AD_URL;
+adVideo.currentTime = 0;
+let elapsed = 0;
+skipBtn.classList.remove('show');
+adTimer.textContent = `0:${String(AD_DURATION).padStart(2,'0')}`;
+adVideo.play();
+adInterval = setInterval(() => {
+elapsed++;
+const remaining = Math.max(0, AD_DURATION - elapsed);
+adTimer.textContent = `0:${String(remaining).padStart(2,'0')}`;
+if (elapsed >= SKIP_AFTER) skipBtn.classList.add('show');
+if (elapsed >= AD_DURATION) finishAd();
+}, 1000);
+adVideo.addEventListener('ended', () => finishAd(), { once: true });
+skipBtn.onclick = finishAd;
+}
+
+function finishAd() {
+clearInterval(adInterval);
+adOverlay.classList.remove('active');
+adVideo.pause();
+adVideo.src = '';
+startMainStream();
+}
+
+function startMainStream() {
+setStatus('Loading');
+if (hls) { hls.destroy(); hls = null; }
+video.removeAttribute('src');
+if (Hls.isSupported()) {
+hls = new Hls({ xhrSetup: (xhr) => xhr.withCredentials = false });
+hls.loadSource(STREAM_URL);
+hls.attachMedia(video);
+hls.on(Hls.Events.MANIFEST_PARSED, () => {
+video.play().then(() => { setStatus('Live'); setPlaying(true); showOverlay(); }).catch(() => { setStatus('Click to play'); });
+});
+hls.on(Hls.Events.ERROR, (e, data) => {
+if (data.fatal) { setStatus('Error'); setPlaying(false); }
+});
+} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+video.src = STREAM_URL;
+video.play().then(() => { setStatus('Live'); setPlaying(true); }).catch(() => {});
+} else {
+setStatus('HLS not supported');
+}
+}
+
+window.addEventListener('load', () => playPrerollAd());
+
+try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+</script>
+</body>
+</html>
