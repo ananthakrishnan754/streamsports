@@ -11,8 +11,8 @@ html, body { height: 100%; overflow: hidden; }
 body { background: #000; color: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; user-select: none; -webkit-tap-highlight-color: transparent; }
 
 header { width: 100%; padding: 1rem 1.2rem 0.4rem; display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+header svg.logo-dot { width: 6px; height: 6px; flex-shrink: 0; }
 header h1 { font-size: 1rem; font-weight: 700; color: #4caf50; letter-spacing: -0.3px; text-transform: uppercase; }
-header .dot { width: 5px; height: 5px; background: #4caf50; border-radius: 50%; flex-shrink: 0; }
 
 .player-wrap { flex: 1; position: relative; background: #000; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; width: 100%; }
 .player-wrap video { width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; }
@@ -22,8 +22,9 @@ header .dot { width: 5px; height: 5px; background: #4caf50; border-radius: 50%; 
 
 .top-gradient { position: absolute; top: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%); pointer-events: none; }
 
-.center-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 72px; height: 72px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.5); color: #fff; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; padding-left: 5px; backdrop-filter: blur(4px); pointer-events: auto; }
+.center-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 72px; height: 72px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.5); color: #fff; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; backdrop-filter: blur(4px); pointer-events: auto; }
 .center-play:active { transform: translate(-50%, -50%) scale(0.92); background: rgba(76,175,80,0.5); border-color: #4caf50; }
+.center-play svg { width: 28px; height: 28px; fill: #fff; }
 
 .bottom-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 0 1rem 0.5rem; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%); pointer-events: auto; }
 
@@ -38,59 +39,66 @@ header .dot { width: 5px; height: 5px; background: #4caf50; border-radius: 50%; 
 .progress-wrap:hover .progress-hover { opacity: 1; }
 
 .controls-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.25rem 0; }
-.ctrl-btn { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; border-radius: 4px; min-width: 36px; min-height: 36px; }
+.ctrl-btn { background: none; border: none; color: #fff; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; border-radius: 4px; min-width: 36px; min-height: 36px; }
 .ctrl-btn:active { background: rgba(255,255,255,0.08); }
 .ctrl-btn:hover { color: #4caf50; }
-.ctrl-btn.live-btn { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #666; padding: 4px 12px; border-radius: 4px; border: 1px solid #333; }
+.ctrl-btn svg { width: 20px; height: 20px; fill: currentColor; display: block; }
+.ctrl-btn.live-btn { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #666; padding: 4px 12px; border-radius: 4px; border: 1px solid #333; background: none; font-family: inherit; }
 .ctrl-btn.live-btn.active { color: #4caf50; border-color: #4caf50; background: rgba(76,175,80,0.1); }
-.time { font-size: 0.78rem; color: #aaa; letter-spacing: 0.3px; white-space: nowrap; }
+.time { font-size: 0.78rem; color: #aaa; letter-spacing: 0.3px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .spacer { flex: 1; }
 .volume-mobile { display: flex; align-items: center; gap: 0.4rem; }
 .volume-mobile input { width: 60px; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.15); border-radius: 2px; outline: none; }
-.volume-mobile input::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #4caf50; border-radius: 50%; cursor: pointer; }
+.volume-mobile input::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #4caf50; border-radius: 50%; cursor: pointer; border: none; }
+.volume-mobile input::-moz-range-thumb { width: 14px; height: 14px; background: #4caf50; border-radius: 50%; border: none; cursor: pointer; }
 
 .ad-overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 20; }
 .ad-overlay.active { display: flex; }
 .ad-overlay video { width: 100%; height: 100%; object-fit: contain; }
 .ad-label { position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.85); color: #4caf50; font-size: 0.6rem; padding: 3px 10px; border-radius: 3px; border: 1px solid #2e7d32; letter-spacing: 1px; text-transform: uppercase; }
-.skip-btn { position: absolute; bottom: 90px; right: 16px; background: rgba(0,0,0,0.9); color: #fff; border: 1px solid #2e7d32; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: none; }
-.skip-btn.show { display: block; }
+.skip-btn { position: absolute; bottom: 90px; right: 16px; background: rgba(0,0,0,0.9); color: #fff; border: 1px solid #2e7d32; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: none; font-family: inherit; align-items: center; gap: 6px; }
+.skip-btn.show { display: flex; }
 .skip-btn:active { background: #1b5e20; }
-.ad-timer { position: absolute; bottom: 90px; left: 16px; background: rgba(0,0,0,0.85); color: #4caf50; font-size: 0.8rem; padding: 4px 12px; border-radius: 3px; border: 1px solid #2e7d32; }
+.skip-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.ad-timer { position: absolute; bottom: 90px; left: 16px; background: rgba(0,0,0,0.85); color: #4caf50; font-size: 0.8rem; padding: 4px 12px; border-radius: 3px; border: 1px solid #2e7d32; font-variant-numeric: tabular-nums; }
 
-.banner-ad { width: 100%; flex-shrink: 0; min-height: 60px; background: #080808; display: flex; align-items: center; justify-content: center; color: #1a3a1a; font-size: 0.65rem; border-top: 1px solid #0a0a0a; overflow: hidden; }
+.banner-ad { width: 100%; flex-shrink: 0; min-height: 60px; background: #080808; display: flex; align-items: center; justify-content: center; border-top: 1px solid #0f0f0f; overflow: hidden; }
 .banner-ad ins.adsbygoogle { display: block; }
 
-.status-bar { width: 100%; padding: 0.3rem 1.2rem; font-size: 0.65rem; color: #1a1a1a; flex-shrink: 0; }
-.status-bar .dot { color: #4caf50; }
+.status-bar { width: 100%; padding: 0.3rem 1.2rem; font-size: 0.65rem; color: #1a1a1a; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+.status-bar svg { width: 6px; height: 6px; fill: #4caf50; }
 
-/* Mobile optimizations */
 @media (max-width: 600px) {
   header { padding: 0.6rem 0.8rem 0.2rem; }
   header h1 { font-size: 0.85rem; }
-  .center-play { width: 60px; height: 60px; font-size: 1.4rem; }
+  .center-play { width: 60px; height: 60px; }
+  .center-play svg { width: 24px; height: 24px; }
   .bottom-controls { padding: 0 0.6rem 0.4rem; }
   .controls-row { gap: 0.5rem; }
-  .ctrl-btn { font-size: 1.1rem; min-width: 32px; min-height: 32px; padding: 4px; }
+  .ctrl-btn { min-width: 32px; min-height: 32px; padding: 4px; }
+  .ctrl-btn svg { width: 18px; height: 18px; }
   .time { font-size: 0.7rem; }
   .volume-mobile input { width: 40px; }
   .progress-track { height: 3px; }
   .banner-ad { min-height: 50px; }
   .ctrl-btn.live-btn { font-size: 0.6rem; padding: 3px 8px; }
+  .skip-btn { bottom: 80px; right: 12px; padding: 8px 16px; font-size: 0.8rem; }
+  .ad-timer { bottom: 80px; left: 12px; }
 }
 
 @media (max-height: 400px) {
   header { display: none; }
   .bottom-controls { padding-bottom: 0.2rem; }
   .controls-row { gap: 0.4rem; }
-  .ctrl-btn { font-size: 0.9rem; min-width: 28px; min-height: 28px; }
+  .ctrl-btn { min-width: 28px; min-height: 28px; }
+  .ctrl-btn svg { width: 16px; height: 16px; }
 }
 </style>
 </head>
 <body>
 
 <header>
-<span class="dot"></span>
+<svg class="logo-dot" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#4caf50"/></svg>
 <h1>StreamSports</h1>
 </header>
 
@@ -98,15 +106,20 @@ header .dot { width: 5px; height: 5px; background: #4caf50; border-radius: 50%; 
 <div class="ad-overlay" id="adOverlay">
 <span class="ad-label">Ad</span>
 <video id="adVideo" muted playsinline></video>
-<span class="ad-timer" id="adTimer"></span>
-<button class="skip-btn" id="skipBtn">Skip Ad</button>
+<span class="ad-timer" id="adTimer">0:15</span>
+<button class="skip-btn" id="skipBtn">
+<svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+Skip
+</button>
 </div>
 
 <video id="mainVideo" playsinline preload="metadata"></video>
 
 <div class="overlay" id="overlay">
 <div class="top-gradient"></div>
-<button class="center-play" id="centerPlay">▶</button>
+<button class="center-play" id="centerPlay">
+<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+</button>
 
 <div class="bottom-controls">
 <div class="progress-wrap" id="progressWrap">
@@ -117,23 +130,36 @@ header .dot { width: 5px; height: 5px; background: #4caf50; border-radius: 50%; 
 </div>
 </div>
 <div class="controls-row">
-<button class="ctrl-btn" id="playBtn">▶</button>
-<button class="ctrl-btn" id="rewindBtn">⏪</button>
-<button class="ctrl-btn" id="forwardBtn">⏩</button>
+<button class="ctrl-btn" id="playBtn">
+<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+</button>
+<button class="ctrl-btn" id="rewindBtn">
+<svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+</button>
+<button class="ctrl-btn" id="forwardBtn">
+<svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+</button>
 <span class="time" id="timeDisplay">0:00 / 0:00</span>
 <div class="spacer"></div>
 <button class="ctrl-btn live-btn" id="liveBtn">Live</button>
 <div class="volume-mobile">
-<button class="ctrl-btn" id="volumeBtn">🔊</button>
+<button class="ctrl-btn" id="volumeBtn">
+<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+</button>
 <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
 </div>
-<button class="ctrl-btn" id="fullscreenBtn">⛶</button>
+<button class="ctrl-btn" id="fullscreenBtn">
+<svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+</button>
 </div>
 </div>
 </div>
 </div>
 
-<div class="status-bar"><span class="dot">●</span> <span id="status">Ready</span></div>
+<div class="status-bar">
+<svg viewBox="0 0 6 6"><circle cx="3" cy="3" r="3"/></svg>
+<span id="status">Ready</span>
+</div>
 
 <div class="banner-ad">
 <ins class="adsbygoogle"
@@ -172,6 +198,12 @@ const adVideo = document.getElementById('adVideo');
 const adTimer = document.getElementById('adTimer');
 const skipBtn = document.getElementById('skipBtn');
 
+const PLAY_SVG = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const PAUSE_SVG = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+const VOL_HIGH = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+const VOL_MID = '<svg viewBox="0 0 24 24"><path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/></svg>';
+const VOL_OFF = '<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
+
 let hls = null;
 let adInterval = null;
 let isPlaying = false;
@@ -199,7 +231,6 @@ wrap.addEventListener('click', (e) => {
 if (e.target === wrap || e.target.closest('video')) togglePlay();
 });
 
-// Keyboard controls
 document.addEventListener('keydown', (e) => {
 if (e.target.tagName === 'INPUT') return;
 switch(e.key) {
@@ -233,8 +264,8 @@ showOverlay();
 
 function setPlaying(state) {
 isPlaying = state;
-playBtn.textContent = state ? '⏸' : '▶';
-centerPlay.textContent = state ? '⏸' : '▶';
+playBtn.innerHTML = state ? PAUSE_SVG : PLAY_SVG;
+centerPlay.innerHTML = state ? PAUSE_SVG : PLAY_SVG;
 centerPlay.style.opacity = state ? '0' : '1';
 if (!state) { overlay.classList.add('visible'); clearTimeout(hideTimer); }
 }
@@ -251,7 +282,12 @@ const el = wrap;
 function toggleMute() {
 video.muted = !video.muted;
 volumeSlider.value = video.muted ? 0 : video.volume;
-volumeBtn.textContent = video.muted || video.volume === 0 ? '🔇' : video.volume < 0.5 ? '🔉' : '🔊';
+updateVolumeIcon();
+}
+
+function updateVolumeIcon() {
+const v = video.muted ? 0 : video.volume;
+volumeBtn.innerHTML = v === 0 ? VOL_OFF : v < 0.5 ? VOL_MID : VOL_HIGH;
 }
 
 centerPlay.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
@@ -276,7 +312,7 @@ liveBtn.classList.toggle('active', nearLive);
 isLive = nearLive;
 } else if (isNaN(video.duration) || video.duration === Infinity) {
 progressFill.style.width = '100%';
-timeDisplay.textContent = `Live`;
+timeDisplay.textContent = 'Live';
 liveBtn.classList.add('active');
 isLive = true;
 }
@@ -299,7 +335,6 @@ timeDisplay.textContent = 'Live';
 }
 });
 
-// Progress bar seeking
 let isDragging = false;
 function seekFromEvent(e) {
 if (!video.duration || !isFinite(video.duration)) return;
@@ -336,7 +371,7 @@ progressWrap.addEventListener('touchend', () => { isDragging = false; });
 volumeSlider.addEventListener('input', () => {
 video.volume = volumeSlider.value;
 video.muted = video.volume === 0;
-volumeBtn.textContent = video.volume === 0 ? '🔇' : video.volume < 0.5 ? '🔉' : '🔊';
+updateVolumeIcon();
 });
 
 fullscreenBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFullscreen(); });
