@@ -1,0 +1,64 @@
+[
+  {
+    "customer": {
+      "name": "anantha krishnan",
+      "phone": "08089252039",
+      "email": "krishnananantha754@gmail.com",
+      "address": "THULASI BHAVAN ,PULIYOOR P.O,BUDHANOOR,689510",
+      "city": "CHENGANOOR",
+      "state": "Kerala",
+      "pincode": "689510",
+      "country": "India"
+    },
+    "currency": "INR",
+    "items": [
+      {
+        "id": "ss-027",
+        "slug": "women-oversized-graphic-tee-in-off-white-ss-027",
+        "name": "oversized graphic tee in off white",
+        "size": "M",
+        "qty": 1,
+        "priceInr": 499,
+        "priceUsd": 9
+      }
+    ],
+    "subtotal": 499,
+    "shipping": 0,
+    "total": 499,
+    "paymentMethod": "upi",
+    "id": "SSMSSYERDZ345",
+    "createdAt": "2026-08-14T12:59:24.071Z",
+    "status": "awaiting_payment"
+  },
+  {
+    "customer": {
+      "name": "Test User",
+      "phone": "9876543210",
+      "email": "test@example.com",
+      "address": "42 Test Street",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560001",
+      "country": "India"
+    },
+    "currency": "INR",
+    "items": [
+      {
+        "id": "ss-001",
+        "slug": "men-oversized-back-print-t-shirt-in-black-ss-001",
+        "name": "oversized back print t-shirt in black",
+        "size": "M",
+        "qty": 1,
+        "priceInr": 499,
+        "priceUsd": 9
+      }
+    ],
+    "subtotal": 499,
+    "shipping": 0,
+    "total": 499,
+    "paymentMethod": "upi",
+    "id": "SSMSSXPANO529",
+    "createdAt": "2026-08-14T12:39:35.989Z",
+    "status": "shipped"
+  }
+]
